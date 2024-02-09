@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Blogging Platform</title>
+    <style>
+        /* Basic CSS styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        input, textarea, button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 8px;
+            font-size: 16px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .blog-post {
+            background-color: #f9f9f9;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .blog-post h2 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Simple Blogging Platform</h1>
+        <form id="blogForm">
+            <input type="text" id="title" placeholder="Title" required>
+            <textarea id="body" placeholder="Body" required></textarea>
+            <input type="text" id="author" placeholder="Author" required>
+            <button type="submit">Create Post</button>
+        </form>
+        <div id="blogPosts"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const blogForm = document.getElementById('blogForm');
+            const blogPostsContainer = document.getElementById('blogPosts');
+
+            // Function to fetch all blog posts
+            async function fetchBlogPosts() {
+                const response = await fetch('/blogs');
+                const data = await response.json();
+                return data;
+            }
+
+            // Function to render blog posts
+            async function renderBlogPosts() {
+                const blogPosts = await fetchBlogPosts();
+                blogPostsContainer.innerHTML = '';
+                blogPosts.forEach(post => {
+                    const postElement = document.createElement('div');
+                    postElement.classList.add('blog-post');
+                    postElement.innerHTML = `
+                        <h2>${post.title}</h2>
+                        <p>${post.body}</p>
+                        <p><strong>Author:</strong> ${post.author}</p>
+                    `;
+                    blogPostsContainer.appendChild(postElement);
+                });
+            }
+
+            // Initial render
+            renderBlogPosts();
+
+            // Form submission handler
+            blogForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                const title = document.getElementById('title').value;
+                const body = document.getElementById('body').value;
+                const author = document.getElementById('author').value;
+                const response = await fetch('/blogs', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ title, body, author })
+                });
+                if (response.ok) {
+                    // Clear form fields and re-render posts
+                    document.getElementById('title').value = '';
+                    document.getElementById('body').value = '';
+                    document.getElementById('author').value = '';
+                    renderBlogPosts();
+                } else {
+                    alert('Failed to create blog post');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
